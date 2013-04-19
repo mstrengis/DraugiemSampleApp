@@ -19,14 +19,18 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import draugiem.lv.api.AuthCallback;
 import draugiem.lv.api.DraugiemAuth;
+import draugiem.lv.api.PaymentCallback;
+import draugiem.lv.api.TransactionCallback;
+import draugiem.lv.api.TransactionCheckCallback;
 import draugiem.lv.api.User;
 
 public class MainActivity extends Activity {
 	private static final String APP = "f73d8e754e72e4f89833949823bf0e51";
-	
-	private Button mAuthorize, mLogout;
+	private static final int PAYMENT_TEST = 1893;
+	private Button mAuthorize, mLogout, mPay;
 	private TextView mUsername, mNick;
 	private ImageView mIcon;
 	private RelativeLayout mUserWrap;
@@ -35,13 +39,12 @@ public class MainActivity extends Activity {
 	private DraugiemAuth mDraugiemAuth;
 	private AuthCallback mAuthCallback;
 	
-	@Override
+	@Override 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		 
 		mDraugiemAuth = new DraugiemAuth(APP, this);
-		
 		mAuthCallback = new AuthCallback(){
 			@Override
 			public void onLogin(User u, String apikey) { 
@@ -64,6 +67,7 @@ public class MainActivity extends Activity {
 			public void onError() {
 				mProgress.setVisibility(View.GONE);
 			}
+			
 			@Override
 			public void onNoApp() {
 				mProgress.setVisibility(View.GONE);
@@ -77,6 +81,73 @@ public class MainActivity extends Activity {
 		
 		mAuthorize = (Button) findViewById(R.id.authorize);
 		mLogout = (Button) findViewById(R.id.logout);
+		mPay = (Button) findViewById(R.id.pay);
+		mPay.setOnClickListener(new OnClickListener(){
+			public void onClick(View v){
+				mProgress.setVisibility(View.VISIBLE);
+				mDraugiemAuth.getTransactionId(PAYMENT_TEST, new TransactionCallback(){
+					@Override
+					public void onTransaction(final int id, String url) { 
+						mProgress.setVisibility(View.GONE);
+						if(id > 0){
+							mProgress.setVisibility(View.VISIBLE);
+							mDraugiemAuth.payment(id, new PaymentCallback(){
+								@Override
+								public void onSuccess() {
+									mProgress.setVisibility(View.GONE);
+									Toast.makeText(MainActivity.this, "Payment succeeded", Toast.LENGTH_LONG).show();
+								}
+
+								@Override
+								public void onError(String error) {
+									mProgress.setVisibility(View.GONE);
+									Toast.makeText(MainActivity.this, (error == null || error.equals("") ? "Some kind of error" : error), Toast.LENGTH_LONG).show();
+								}
+
+								@Override
+								public void onNoApp() {
+									mProgress.setVisibility(View.GONE);
+									try {
+									    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.draugiem2")));
+									} catch (android.content.ActivityNotFoundException anfe) {
+									    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=com.draugiem2")));
+									} 
+								}
+								@Override
+								public void onPossibleSms() {
+									mDraugiemAuth.checkTransaction(id, 5, new TransactionCheckCallback(){
+										@Override
+										public void onOk() { 
+											mProgress.setVisibility(View.GONE);
+											Toast.makeText(MainActivity.this, "Payment succeeded", Toast.LENGTH_LONG).show();
+											//TODO add service
+										}
+
+										@Override
+										public void onFailed() {
+											Toast.makeText(MainActivity.this, "Payment failed", Toast.LENGTH_LONG).show();
+											mProgress.setVisibility(View.GONE);
+										}
+
+										@Override
+										public void onStopChecking() {
+											Toast.makeText(MainActivity.this, "Stop checking transaction", Toast.LENGTH_LONG).show();
+											mProgress.setVisibility(View.GONE);
+										}
+									});
+								}
+
+								@Override
+								public void onUserCanceled() {
+									mProgress.setVisibility(View.GONE);
+								}
+							});
+						}
+					}
+				});
+			}
+		});
+		
 		mLogout.setVisibility(View.GONE);
 		mLogout.setOnClickListener(new OnClickListener(){
 			public void onClick(View v){
@@ -87,8 +158,9 @@ public class MainActivity extends Activity {
 				mIcon.setImageBitmap(null);
 				mUsername.setText(null);
 				mNick.setText(null);
-			}
+			} 
 		});
+		
 		mUsername = (TextView) findViewById(R.id.username);
 		mNick = (TextView) findViewById(R.id.nick);
 		mIcon = (ImageView) findViewById(R.id.icon);
@@ -105,7 +177,6 @@ public class MainActivity extends Activity {
 		});
 		
 		mDraugiemAuth.authorizeFromCache(mAuthCallback);
-		
 	}
 	
 	private static class BitmapDownloader extends AsyncTask<String, Void, Bitmap>{

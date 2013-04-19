@@ -38,8 +38,16 @@
             android:layout_height="wrap_content"
             android:layout_toRightOf="@+id/icon"
             android:layout_below="@+id/username"
-            
         />
+        
+        <Button 
+            android:id="@+id/pay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pay"
+            android:layout_toRightOf="@+id/icon"
+            android:layout_below="@+id/nick"
+		/>
 	</RelativeLayout>
     
     <Button 
