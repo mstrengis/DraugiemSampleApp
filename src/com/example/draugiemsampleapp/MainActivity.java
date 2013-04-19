@@ -60,7 +60,7 @@ public class MainActivity extends Activity {
 				mNick.setText(new StringBuilder(u.nick).append(" ").append(u.city).toString());
 				mUserWrap.setVisibility(View.VISIBLE);
 				mAuthorize.setVisibility(View.GONE);
-				mLogout.setVisibility(View.VISIBLE);
+				mLogout.setVisibility(View.VISIBLE); 
 			}
 			
 			@Override
