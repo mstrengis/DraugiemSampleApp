@@ -87,62 +87,65 @@ public class MainActivity extends Activity {
 				mProgress.setVisibility(View.VISIBLE);
 				mDraugiemAuth.getTransactionId(PAYMENT_TEST, new TransactionCallback(){
 					@Override
-					public void onTransaction(final int id, String url) { 
-						mProgress.setVisibility(View.GONE);
-						if(id > 0){
-							mProgress.setVisibility(View.VISIBLE);
-							mDraugiemAuth.payment(id, new PaymentCallback(){
-								@Override
-								public void onSuccess() {
-									mProgress.setVisibility(View.GONE);
-									Toast.makeText(MainActivity.this, "Payment succeeded", Toast.LENGTH_LONG).show();
-								}
-
-								@Override
-								public void onError(String error) {
-									mProgress.setVisibility(View.GONE);
-									Toast.makeText(MainActivity.this, (error == null || error.equals("") ? "Some kind of error" : error), Toast.LENGTH_LONG).show();
-								}
-
-								@Override
-								public void onNoApp() {
-									mProgress.setVisibility(View.GONE);
-									try {
-									    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.draugiem2")));
-									} catch (android.content.ActivityNotFoundException anfe) {
-									    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=com.draugiem2")));
-									} 
-								}
-								@Override
-								public void onPossibleSms() {
-									mDraugiemAuth.checkTransaction(id, 5, new TransactionCheckCallback(){
-										@Override
-										public void onOk() { 
-											mProgress.setVisibility(View.GONE);
-											Toast.makeText(MainActivity.this, "Payment succeeded", Toast.LENGTH_LONG).show();
-											//TODO add service
-										}
-
-										@Override
-										public void onFailed() {
-											Toast.makeText(MainActivity.this, "Payment failed", Toast.LENGTH_LONG).show();
-											mProgress.setVisibility(View.GONE);
-										}
-
-										@Override
-										public void onStopChecking() {
-											Toast.makeText(MainActivity.this, "Stop checking transaction", Toast.LENGTH_LONG).show();
-											mProgress.setVisibility(View.GONE);
-										}
-									});
-								}
-
-								@Override
-								public void onUserCanceled() {
-									mProgress.setVisibility(View.GONE);
-								}
-							});
+					public void onTransaction(final int id, String url) {
+						if(id == 0){
+							mProgress.setVisibility(View.GONE);
+							//TODO show error;
+							return;
 						}
+						
+						mProgress.setVisibility(View.VISIBLE);
+						mDraugiemAuth.payment(id, new PaymentCallback(){
+							@Override
+							public void onSuccess() {
+								mProgress.setVisibility(View.GONE);
+								Toast.makeText(MainActivity.this, "Payment succeeded", Toast.LENGTH_LONG).show();
+							}
+
+							@Override
+							public void onError(String error) {
+								mProgress.setVisibility(View.GONE);
+								Toast.makeText(MainActivity.this, (error == null || error.equals("") ? "Some kind of error" : error), Toast.LENGTH_LONG).show();
+							}
+
+							@Override
+							public void onNoApp() {
+								mProgress.setVisibility(View.GONE);
+								try {
+								    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.draugiem2")));
+								} catch (android.content.ActivityNotFoundException anfe) {
+								    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=com.draugiem2")));
+								} 
+							}
+							@Override
+							public void onPossibleSms() {
+								mDraugiemAuth.checkTransaction(id, 5, new TransactionCheckCallback(){
+									@Override
+									public void onOk() { 
+										mProgress.setVisibility(View.GONE);
+										Toast.makeText(MainActivity.this, "Payment succeeded", Toast.LENGTH_LONG).show();
+										//TODO add service
+									}
+
+									@Override
+									public void onFailed() {
+										Toast.makeText(MainActivity.this, "Payment failed", Toast.LENGTH_LONG).show();
+										mProgress.setVisibility(View.GONE);
+									}
+
+									@Override
+									public void onStopChecking() {
+										Toast.makeText(MainActivity.this, "Stop checking transaction", Toast.LENGTH_LONG).show();
+										mProgress.setVisibility(View.GONE);
+									}
+								});
+							}
+
+							@Override
+							public void onUserCanceled() {
+								mProgress.setVisibility(View.GONE);
+							}
+						});
 					}
 				});
 			}
