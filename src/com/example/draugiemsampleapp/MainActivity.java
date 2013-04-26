@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
 	private ImageView mIcon;
 	private RelativeLayout mUserWrap;
 	private ProgressBar mProgress;
-	
+	 
 	private DraugiemAuth mDraugiemAuth;
 	private AuthCallback mAuthCallback;
 	
